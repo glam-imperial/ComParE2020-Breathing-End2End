@@ -16,19 +16,19 @@ def read_data(challenge_folder, partition_to_id):
     data = dict()
     for partition in partition_to_id.keys():
         data[partition] = dict()
-        for id in partition_to_id[partition]:
-            data[partition][id] = dict()
+        for speaker_id in partition_to_id[partition]:
+            data[partition][speaker_id] = dict()
 
-            if id < 10:
-                id_text = "0" + repr(id)
+            if speaker_id < 10:
+                id_text = "0" + repr(speaker_id)
             else:
-                id_text = repr(id)
+                id_text = repr(speaker_id)
 
             wav = read_recording(challenge_folder + "/wav/" + partition + "_" + id_text + ".wav")
 
-            data[partition][id]["wav"] = wav
+            data[partition][speaker_id]["wav"] = wav
             if partition in ["train", "devel"]:
-                data[partition][id]["upper_belt"] = belt_data[belt_data['filename'] == partition + "_" + id_text + ".wav"]['upper_belt'].values.reshape(-1,).astype(np.float32)
+                data[partition][speaker_id]["upper_belt"] = belt_data[belt_data['filename'] == partition + "_" + id_text + ".wav"]['upper_belt'].values.reshape(-1,).astype(np.float32)
 
     return data
 
@@ -61,29 +61,29 @@ def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
-def serialize_sample(writer, data, partition, id):
+def serialize_sample(writer, data, partition, speaker_id):
     if partition in ["train", "devel"]:
-        wav = data[partition][id]["wav"]
-        upper_belt = data[partition][id]["upper_belt"]
+        wav = data[partition][speaker_id]["wav"]
+        upper_belt = data[partition][speaker_id]["upper_belt"]
 
         for i, (wav_step,
                 upper_belt_step) in enumerate(zip(*(wav, upper_belt))):
 
             example = tf.train.Example(features=tf.train.Features(feature={
                 'sample_id': _int_feature(np.int64(i)),
-                'recording_id': _int_feature(np.int64(id)),
+                'recording_id': _int_feature(np.int64(speaker_id)),
                 'upper_belt': _bytes_feature(upper_belt_step.tobytes()),
                 'raw_audio': _bytes_feature(wav_step.tobytes()),
             }))
 
             writer.write(example.SerializeToString())
     elif partition == "test":
-        wav = data[partition][id]["wav"]
+        wav = data[partition][speaker_id]["wav"]
 
         for i, (wav_step) in enumerate(wav):
             example = tf.train.Example(features=tf.train.Features(feature={
                 'sample_id': _int_feature(np.int64(i)),
-                'recording_id': _int_feature(np.int64(id)),
+                'recording_id': _int_feature(np.int64(speaker_id)),
                 'raw_audio': _bytes_feature(wav_step.tobytes()),
             }))
 
@@ -108,9 +108,9 @@ def main(tf_records_folder, challenge_folder):
     for partition in partition_to_id.keys():
         print("Making tfrecords for", partition, "partition.")
 
-        for id in partition_to_id[partition]:
-            writer = tf.python_io.TFRecordWriter(tf_records_folder + "/" + partition + "/" + partition + '{}.tfrecords'.format(id))
-            serialize_sample(writer, data, partition, id)
+        for speaker_id in partition_to_id[partition]:
+            writer = tf.python_io.TFRecordWriter(tf_records_folder + "/" + partition + "/" + partition + '{}.tfrecords'.format(speaker_id))
+            serialize_sample(writer, data, partition, speaker_id)
 
 
 if __name__ == "__main__":

@@ -236,6 +236,7 @@ class RunEpoch:
 
 def make_label_file(path, data):
     with open(path, "w") as fp:
+        fp.write("filename" + "," + "timeFrame" + "," + "upper_belt" + "\n")
         for speaker in range(data.shape[0]):
 
             if speaker < 10:
