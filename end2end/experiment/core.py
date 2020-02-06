@@ -1,9 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from scipy import sparse as spsp
-from scipy import signal as spsig
 from scipy import stats as spst
-import sklearn
 
 from end2end.common import dict_to_struct
 
