@@ -109,7 +109,7 @@ def main(tf_records_folder, challenge_folder):
         print("Making tfrecords for", partition, "partition.")
 
         for speaker_id in partition_to_id[partition]:
-            writer = tf.python_io.TFRecordWriter(tf_records_folder + "/" + partition + "/" + partition + '{}.tfrecords'.format(speaker_id))
+            writer = tf.io.TFRecordWriter(tf_records_folder + "/" + partition + "/" + partition + '{}.tfrecords'.format(speaker_id))
             serialize_sample(writer, data, partition, speaker_id)
 
 
